@@ -16,10 +16,6 @@
     "checkAll": "npm run size && npm run lint && npm run test",
     "contributors:generate": "npm all-contributors generate"
   },
-  "files": [
-    "lib",
-    "index.d.ts"
-  ],
   "author": "Kiarash Zarinmehr",
   "homepage": "https://kiarash-z.github.io/react-modern-calendar-datepicker",
   "repository": {
