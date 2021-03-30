@@ -5,7 +5,7 @@ import DatePickerInput from './DatePickerInput';
 import { getValueType } from './shared/generalUtils';
 import { TYPE_SINGLE_DATE, TYPE_MUTLI_DATE, TYPE_RANGE } from './shared/constants';
 
-const DatePicker = ({
+const DatePicker = React.forwardRef(({
   value,
   onChange,
   formatInputText,
@@ -34,7 +34,8 @@ const DatePicker = ({
   shouldHighlightWeekends,
   renderFooter,
   customDaysClassName,
-}) => {
+  refCallback
+}, ref) => {
   const calendarContainerElement = useRef(null);
   const inputElement = useRef(null);
   const shouldPreventToggle = useRef(false);
@@ -134,8 +135,17 @@ const DatePicker = ({
     }
   }, [shouldPreventToggle, isCalendarOpen]);
 
+  useEffect(() => {
+    refCallback({
+      openCalendar: () => {
+        inputElement.current.focus()
+      },
+    })
+  }, [])
+
   return (
     <div
+      ref={ref}
       onFocus={openCalendar}
       onBlur={handleBlur}
       onKeyUp={handleKeyUp}
@@ -152,47 +162,49 @@ const DatePicker = ({
         inputName={inputName}
         locale={locale}
       />
-      {isCalendarOpen && (
-        <>
-          <div
-            ref={calendarContainerElement}
-            className="DatePicker__calendarContainer"
-            data-testid="calendar-container"
-            role="presentation"
-            onMouseDown={() => {
-              shouldPreventToggle.current = true;
-            }}
-          >
-            <Calendar
-              value={value}
-              onChange={handleCalendarChange}
-              calendarClassName={calendarClassName}
-              calendarTodayClassName={calendarTodayClassName}
-              calendarSelectedDayClassName={calendarSelectedDayClassName}
-              calendarRangeStartClassName={calendarRangeStartClassName}
-              calendarRangeBetweenClassName={calendarRangeBetweenClassName}
-              calendarRangeEndClassName={calendarRangeEndClassName}
-              disabledDays={disabledDays}
-              colorPrimary={colorPrimary}
-              colorPrimaryLight={colorPrimaryLight}
-              slideAnimationDuration={slideAnimationDuration}
-              onDisabledDayError={onDisabledDayError}
-              minimumDate={minimumDate}
-              maximumDate={maximumDate}
-              selectorStartingYear={selectorStartingYear}
-              selectorEndingYear={selectorEndingYear}
-              locale={locale}
-              shouldHighlightWeekends={shouldHighlightWeekends}
-              renderFooter={renderFooter}
-              customDaysClassName={customDaysClassName}
-            />
-          </div>
-          <div className="DatePicker__calendarArrow" />
-        </>
-      )}
+      <div className="DatePicker__calendarContainer__wrap">
+        {isCalendarOpen && (
+          <>
+            <div
+              ref={calendarContainerElement}
+              className="DatePicker__calendarContainer"
+              data-testid="calendar-container"
+              role="presentation"
+              onMouseDown={() => {
+                shouldPreventToggle.current = true;
+              }}
+            >
+              <Calendar
+                value={value}
+                onChange={handleCalendarChange}
+                calendarClassName={calendarClassName}
+                calendarTodayClassName={calendarTodayClassName}
+                calendarSelectedDayClassName={calendarSelectedDayClassName}
+                calendarRangeStartClassName={calendarRangeStartClassName}
+                calendarRangeBetweenClassName={calendarRangeBetweenClassName}
+                calendarRangeEndClassName={calendarRangeEndClassName}
+                disabledDays={disabledDays}
+                colorPrimary={colorPrimary}
+                colorPrimaryLight={colorPrimaryLight}
+                slideAnimationDuration={slideAnimationDuration}
+                onDisabledDayError={onDisabledDayError}
+                minimumDate={minimumDate}
+                maximumDate={maximumDate}
+                selectorStartingYear={selectorStartingYear}
+                selectorEndingYear={selectorEndingYear}
+                locale={locale}
+                shouldHighlightWeekends={shouldHighlightWeekends}
+                renderFooter={renderFooter}
+                customDaysClassName={customDaysClassName}
+              />
+            </div>
+            <div className="DatePicker__calendarArrow" />
+          </>
+        )}
+      </div>
     </div>
   );
-};
+});
 
 DatePicker.defaultProps = {
   wrapperClassName: '',
