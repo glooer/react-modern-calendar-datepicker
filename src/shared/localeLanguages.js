@@ -170,7 +170,7 @@ const localeLanguages = {
 
     // is your language rtl or ltr?
     isRtl: false,
-  }
+  },
 };
 
 const getLocaleDetails = locale => {

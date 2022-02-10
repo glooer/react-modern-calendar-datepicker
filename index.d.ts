@@ -14,6 +14,8 @@ type Value = DayValue | Day[] | DayRange;
 
 type CustomDayClassNameItem = Day & { className: string };
 
+type PickerType = "month" | "date";
+
 export interface CalendarProps<TValue extends Value> {
   value: TValue;
   onChange?(value: TValue): void;
@@ -36,6 +38,7 @@ export interface CalendarProps<TValue extends Value> {
   calendarRangeEndClassName?: string;
   renderFooter?: React.FC;
   customDaysClassName?: CustomDayClassNameItem[];
+  picker?: PickerType;
 }
 
 export function Calendar(props: Optional<CalendarProps<DayValue>, 'value'>): React.ReactElement;
@@ -54,6 +57,7 @@ export interface DatePickerProps<TValue extends Value> extends CalendarProps<TVa
   inputPlaceholder?: string;
   formatInputText?: () => string;
   renderInput?: React.FC<RenderInputProps>;
+  refCallback?: any
 }
 
 type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;

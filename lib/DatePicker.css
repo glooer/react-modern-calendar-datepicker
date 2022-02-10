@@ -670,3 +670,57 @@
     transform: translateX(0);
   }
 }
+
+.Calendar__monthSelectorAnimationWrapper.withoutDays .Calendar__monthSelectorItem.-selected,
+.Calendar__monthSelectorAnimationWrapper.withoutDays .Calendar__monthSelectorItem.-selectedStart,
+.Calendar__monthSelectorAnimationWrapper.withoutDays .Calendar__monthSelectorItem.-selectedEnd {
+  background: var(--cl-color-primary);
+  color: #fff;
+}
+
+.Calendar__monthSelectorAnimationWrapper.withoutDays .Calendar__monthSelectorItem.-selectedStart {
+  border-radius: 8px 0px 0px 8px;
+}
+
+.Calendar__monthSelectorAnimationWrapper.withoutDays .Calendar__monthSelectorItem.-selectedEnd {
+  border-radius: 0px 8px 8px 0px;
+}
+
+.Calendar__monthSelectorAnimationWrapper.withoutDays .Calendar__monthSelectorItem.-selected,
+.Calendar__monthSelectorAnimationWrapper.withoutDays .Calendar__monthSelectorItem.-selectedStart .Calendar__monthSelectorItemText,
+.Calendar__monthSelectorAnimationWrapper.withoutDays .Calendar__monthSelectorItem.-selectedEnd .Calendar__monthSelectorItemText {
+  color: #fff;
+  background: var(--cl-color-primary);
+}
+
+.Calendar__monthSelectorAnimationWrapper.withoutDays .Calendar__monthSelectorItem:hover,
+.Calendar__monthSelectorAnimationWrapper.withoutDays .Calendar__monthSelectorItem:hover .Calendar__monthSelectorItemText,
+.Calendar__monthSelectorAnimationWrapper.withoutDays .Calendar__monthSelectorItem:hover.-selectedBetween {
+  color: #fff;
+  background: var(--cl-color-primary);
+}
+
+.Calendar__monthSelectorAnimationWrapper.withoutDays .Calendar__monthSelectorItem,
+.Calendar__monthSelectorAnimationWrapper.withoutDays .Calendar__monthSelectorItem.-selectedStart.-selectedEnd {
+  border-radius: 8px;
+  margin-bottom: 0px;
+  transition: 0s;
+}
+
+.Calendar__monthSelectorAnimationWrapper.withoutDays .Calendar__monthSelectorItem .Calendar__monthSelectorItemText {
+  transition: 0s;
+}
+
+.Calendar__monthSelectorAnimationWrapper.withoutDays .Calendar__monthSelectorItem.-selectedBetween {
+  background: var(--cl-color-primary-light);
+  color: var(--cl-color-primary);
+  border-radius: 0;
+}
+
+.Calendar__monthSelectorAnimationWrapper.withoutDays .DatePicker.rt-calendar .Calendar__monthSelectorItem.-selectedBetween {
+  color: rgba(16, 24, 40, 0.7);
+}
+
+.Calendar__monthSelectorAnimationWrapper.withoutDays .Calendar__monthSelector.withoutAnimate {
+  transition: 0s;
+}

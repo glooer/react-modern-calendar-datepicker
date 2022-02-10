@@ -1,7 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-import { getDateAccordingToMonth, shallowClone, getValueType } from './shared/generalUtils';
-import { TYPE_SINGLE_DATE, TYPE_RANGE, TYPE_MUTLI_DATE } from './shared/constants';
+import {
+  getDateAccordingToMonth,
+  shallowClone,
+  getValueType,
+  deepCloneObject,
+} from './shared/generalUtils';
+import { TYPE_SINGLE_DATE, TYPE_RANGE, TYPE_MUTLI_DATE, PICKER_MONTH } from './shared/constants';
 import { useLocaleUtils, useLocaleLanguage } from './shared/hooks';
 
 import { Header, MonthSelector, YearSelector, DaysList } from './components';
@@ -28,12 +33,13 @@ const Calendar = ({
   shouldHighlightWeekends,
   renderFooter,
   customDaysClassName,
+  picker,
 }) => {
   const calendarElement = useRef(null);
   const [mainState, setMainState] = useState({
     activeDate: null,
     monthChangeDirection: '',
-    isMonthSelectorOpen: false,
+    isMonthSelectorOpen: picker === PICKER_MONTH,
     isYearSelectorOpen: false,
   });
 
@@ -54,7 +60,7 @@ const Calendar = ({
     };
   }, [calendarElement]);
 
-  const { getToday } = useLocaleUtils(locale);
+  const { getToday, isBeforeDate } = useLocaleUtils(locale);
   const { weekDays: weekDaysList, isRtl } = useLocaleLanguage(locale);
   const today = getToday();
 
@@ -99,11 +105,43 @@ const Calendar = ({
   };
 
   const selectMonth = newMonthNumber => {
-    setMainState({
-      ...mainState,
-      activeDate: { ...activeDate, month: newMonthNumber },
-      isMonthSelectorOpen: false,
-    });
+    if (picker !== PICKER_MONTH) {
+      setMainState({
+        ...mainState,
+        activeDate: { ...activeDate, month: newMonthNumber },
+        isMonthSelectorOpen: false,
+      });
+    } else {
+      const getDayRangeValue = day => {
+        const clonedDayRange = deepCloneObject(value);
+        const dayRangeValue =
+          clonedDayRange.from && clonedDayRange.to ? { from: null, to: null } : clonedDayRange;
+        const dayRangeProp = !dayRangeValue.from ? 'from' : 'to';
+        dayRangeValue[dayRangeProp] = day;
+        const { from, to } = dayRangeValue;
+
+        // swap from and to values if from is later than to
+        if (isBeforeDate(dayRangeValue.to, dayRangeValue.from)) {
+          dayRangeValue.from = to;
+          dayRangeValue.to = from;
+        }
+
+        return dayRangeValue;
+      };
+
+      const getNewValue = () => {
+        const day = { ...activeDate, month: newMonthNumber, day: 1 };
+        const valueType = getValueType(value);
+        switch (valueType) {
+          case TYPE_SINGLE_DATE:
+            return day;
+          case TYPE_RANGE:
+            return getDayRangeValue(day);
+        }
+      };
+      const newValue = getNewValue();
+      onChange(newValue);
+    }
   };
 
   const selectYear = year => {
@@ -136,15 +174,22 @@ const Calendar = ({
         isMonthSelectorOpen={mainState.isMonthSelectorOpen}
         isYearSelectorOpen={mainState.isYearSelectorOpen}
         locale={locale}
+        onYearChange={selectYear}
+        picker={picker}
       />
 
       <MonthSelector
+        value={value}
         isOpen={mainState.isMonthSelectorOpen}
         activeDate={activeDate}
         onMonthSelect={selectMonth}
         maximumDate={maximumDate}
         minimumDate={minimumDate}
         locale={locale}
+        calendarRangeStartClassName={calendarRangeStartClassName}
+        calendarRangeEndClassName={calendarRangeEndClassName}
+        calendarRangeBetweenClassName={calendarRangeBetweenClassName}
+        picker={picker}
       />
 
       <YearSelector
@@ -158,34 +203,39 @@ const Calendar = ({
         locale={locale}
       />
 
-      <div className="Calendar__weekDays">{weekdays}</div>
+      {picker !== PICKER_MONTH && (
+        <>
+          <div className="Calendar__weekDays">{weekdays}</div>
 
-      <DaysList
-        activeDate={activeDate}
-        value={value}
-        monthChangeDirection={mainState.monthChangeDirection}
-        onSlideChange={updateDate}
-        disabledDays={disabledDays}
-        onDisabledDayError={onDisabledDayError}
-        minimumDate={minimumDate}
-        maximumDate={maximumDate}
-        onChange={onChange}
-        calendarTodayClassName={calendarTodayClassName}
-        calendarSelectedDayClassName={calendarSelectedDayClassName}
-        calendarRangeStartClassName={calendarRangeStartClassName}
-        calendarRangeEndClassName={calendarRangeEndClassName}
-        calendarRangeBetweenClassName={calendarRangeBetweenClassName}
-        locale={locale}
-        shouldHighlightWeekends={shouldHighlightWeekends}
-        customDaysClassName={customDaysClassName}
-        isQuickSelectorOpen={mainState.isYearSelectorOpen || mainState.isMonthSelectorOpen}
-      />
+          <DaysList
+            activeDate={activeDate}
+            value={value}
+            monthChangeDirection={mainState.monthChangeDirection}
+            onSlideChange={updateDate}
+            disabledDays={disabledDays}
+            onDisabledDayError={onDisabledDayError}
+            minimumDate={minimumDate}
+            maximumDate={maximumDate}
+            onChange={onChange}
+            calendarTodayClassName={calendarTodayClassName}
+            calendarSelectedDayClassName={calendarSelectedDayClassName}
+            calendarRangeStartClassName={calendarRangeStartClassName}
+            calendarRangeEndClassName={calendarRangeEndClassName}
+            calendarRangeBetweenClassName={calendarRangeBetweenClassName}
+            locale={locale}
+            shouldHighlightWeekends={shouldHighlightWeekends}
+            customDaysClassName={customDaysClassName}
+            isQuickSelectorOpen={mainState.isYearSelectorOpen || mainState.isMonthSelectorOpen}
+          />
+        </>
+      )}
       <div className="Calendar__footer">{renderFooter()}</div>
     </div>
   );
 };
 
 Calendar.defaultProps = {
+  onChange: () => {},
   minimumDate: null,
   maximumDate: null,
   colorPrimary: '#0eca2d',

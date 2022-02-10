@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import { isSameDay } from '../shared/generalUtils';
 import { getSlideDate, animateContent, handleSlideAnimationEnd } from '../shared/sliderHelpers';
 import { useLocaleUtils, useLocaleLanguage } from '../shared/hooks';
+import { PICKER_MONTH } from '../shared/constants';
 
 const Header = ({
   maximumDate,
@@ -15,6 +16,8 @@ const Header = ({
   isMonthSelectorOpen,
   isYearSelectorOpen,
   locale,
+  onYearChange,
+  picker,
 }) => {
   const headerElement = useRef(null);
   const monthYearWrapperElement = useRef(null);
@@ -39,6 +42,7 @@ const Header = ({
   }, [monthChangeDirection]);
 
   useEffect(() => {
+    if (picker === PICKER_MONTH) return;
     const isOpen = isMonthSelectorOpen || isYearSelectorOpen;
     const monthText = headerElement.current.querySelector(
       '.Calendar__monthYear.-shown .Calendar__monthText',
@@ -108,7 +112,13 @@ const Header = ({
       child.classList.contains('-shownAnimated'),
     );
     if (isMonthChanging) return;
-    onMonthChange(direction);
+
+    if (picker === PICKER_MONTH) {
+      const { year } = activeDate;
+      onYearChange(year + (direction === 'NEXT' ? 1 : -1));
+    } else {
+      onMonthChange(direction);
+    }
   };
 
   // first button text is the one who shows the current month and year(initial active child)
@@ -126,16 +136,18 @@ const Header = ({
         key={String(isInitialActiveChild)}
         {...hiddenStatus}
       >
-        <button
-          onClick={onMonthSelect}
-          type="button"
-          className="Calendar__monthText"
-          aria-label={isMonthSelectorOpen ? closeMonthSelector : openMonthSelector}
-          tabIndex={isActiveMonth ? '0' : '-1'}
-          {...hiddenStatus}
-        >
-          {month}
-        </button>
+        {picker !== PICKER_MONTH && (
+          <button
+            onClick={onMonthSelect}
+            type="button"
+            className="Calendar__monthText"
+            aria-label={isMonthSelectorOpen ? closeMonthSelector : openMonthSelector}
+            tabIndex={isActiveMonth ? '0' : '-1'}
+            {...hiddenStatus}
+          >
+            {month}
+          </button>
+        )}
         <button
           onClick={onYearSelect}
           type="button"
