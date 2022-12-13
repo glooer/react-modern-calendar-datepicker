@@ -8,11 +8,11 @@ export type Day = {
 
 export type DayValue = Day | null | undefined;
 
-export type DayRange = { from: DayValue; to: DayValue };
+export type DayRange = { from: DayValue; to: DayValue; };
 
 type Value = DayValue | Day[] | DayRange;
 
-type CustomDayClassNameItem = Day & { className: string };
+type CustomDayClassNameItem = Day & { className: string; };
 
 type PickerType = "month" | "date";
 
@@ -57,7 +57,9 @@ export interface DatePickerProps<TValue extends Value> extends CalendarProps<TVa
   inputPlaceholder?: string;
   formatInputText?: () => string;
   renderInput?: React.FC<RenderInputProps>;
-  refCallback?: any
+  refCallback?: any;
+  isPortal?: boolean;
+  portalScrollClasses?: string;
 }
 
 type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
@@ -70,7 +72,7 @@ type WeekDay = {
   name: string;
   short: string;
   isWeekend?: boolean;
-}
+};
 
 export type Utils = {
   monthsList: string[];
@@ -81,7 +83,7 @@ export type Utils = {
   getMonthLength(day: Day): number;
   getMonthFirstWeekday(day: Day): number;
   isBeforeDate(a: Day, b: Day): boolean;
-  checkDayInDayRange(props: Required<DayRange> & { day: Day }): boolean;
+  checkDayInDayRange(props: Required<DayRange> & { day: Day; }): boolean;
   getLanguageDigits(digit: string | number): string;
 };
 

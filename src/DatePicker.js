@@ -4,6 +4,7 @@ import { Calendar } from './Calendar';
 import DatePickerInput from './DatePickerInput';
 import { getValueType } from './shared/generalUtils';
 import { TYPE_SINGLE_DATE, TYPE_MUTLI_DATE, TYPE_RANGE } from './shared/constants';
+import * as ReactDOM from 'react-dom';
 
 const DatePicker = React.forwardRef(
   (
@@ -38,13 +39,44 @@ const DatePicker = React.forwardRef(
       customDaysClassName,
       picker,
       refCallback,
+      isPortal,
+      portalScrollClasses,
     },
     ref,
   ) => {
     const calendarContainerElement = useRef(null);
     const inputElement = useRef(null);
     const shouldPreventToggle = useRef(false);
+    const calendarRef = useRef(false);
     const [isCalendarOpen, setCalendarVisiblity] = useState(false);
+
+    const fixPositionPortal = () => {
+      if (isPortal) {
+        const inputPosition = inputElement.current.getBoundingClientRect()
+        calendarRef.current.style.position = 'fixed';
+        calendarRef.current.style.zIndex = 999;
+        calendarRef.current.style.left = inputPosition.x + 'px';
+        calendarRef.current.style.top = inputPosition.y + inputPosition.height / 2 + 'px';
+      }
+    }
+
+    useEffect(() => {
+      if (!portalScrollClasses) {
+        return;
+      }
+
+      const scroll = () => {
+        fixPositionPortal();
+      }
+
+      if (isCalendarOpen) {
+        document.querySelectorAll(portalScrollClasses).forEach(item => item.addEventListener("scroll", scroll))
+      }
+
+      return () => {
+        document.querySelectorAll(portalScrollClasses).forEach(item => item.removeEventListener("scroll", scroll))
+      }
+    }, [isCalendarOpen, portalScrollClasses])
 
     useEffect(() => {
       const handleBlur = () => {
@@ -88,6 +120,7 @@ const DatePicker = React.forwardRef(
     // Keep the calendar in the screen bounds if input is near the window edges
     useLayoutEffect(() => {
       if (!isCalendarOpen) return;
+      fixPositionPortal();
       const { left, width, height, top } = calendarContainerElement.current.getBoundingClientRect();
       const { clientWidth, clientHeight } = document.documentElement;
       const isOverflowingFromRight = left + width > clientWidth;
@@ -153,6 +186,50 @@ const DatePicker = React.forwardRef(
       }
     }, []);
 
+    const calendarItem = (
+      <div className="DatePicker__calendarContainer__wrap" ref={calendarRef}>
+        {isCalendarOpen && (
+          <>
+            <div
+              ref={calendarContainerElement}
+              className="DatePicker__calendarContainer"
+              data-testid="calendar-container"
+              role="presentation"
+              onMouseDown={() => {
+                shouldPreventToggle.current = true;
+              }}
+            >
+              <Calendar
+                value={value}
+                onChange={handleCalendarChange}
+                calendarClassName={calendarClassName}
+                calendarTodayClassName={calendarTodayClassName}
+                calendarSelectedDayClassName={calendarSelectedDayClassName}
+                calendarRangeStartClassName={calendarRangeStartClassName}
+                calendarRangeBetweenClassName={calendarRangeBetweenClassName}
+                calendarRangeEndClassName={calendarRangeEndClassName}
+                disabledDays={disabledDays}
+                colorPrimary={colorPrimary}
+                colorPrimaryLight={colorPrimaryLight}
+                slideAnimationDuration={slideAnimationDuration}
+                onDisabledDayError={onDisabledDayError}
+                minimumDate={minimumDate}
+                maximumDate={maximumDate}
+                selectorStartingYear={selectorStartingYear}
+                selectorEndingYear={selectorEndingYear}
+                locale={locale}
+                shouldHighlightWeekends={shouldHighlightWeekends}
+                renderFooter={renderFooter}
+                customDaysClassName={customDaysClassName}
+                picker={picker}
+              />
+            </div>
+            <div className="DatePicker__calendarArrow" />
+          </>
+        )}
+      </div>
+    )
+
     return (
       <div
         ref={ref}
@@ -172,47 +249,11 @@ const DatePicker = React.forwardRef(
           inputName={inputName}
           locale={locale}
         />
-        <div className="DatePicker__calendarContainer__wrap">
-          {isCalendarOpen && (
-            <>
-              <div
-                ref={calendarContainerElement}
-                className="DatePicker__calendarContainer"
-                data-testid="calendar-container"
-                role="presentation"
-                onMouseDown={() => {
-                  shouldPreventToggle.current = true;
-                }}
-              >
-                <Calendar
-                  value={value}
-                  onChange={handleCalendarChange}
-                  calendarClassName={calendarClassName}
-                  calendarTodayClassName={calendarTodayClassName}
-                  calendarSelectedDayClassName={calendarSelectedDayClassName}
-                  calendarRangeStartClassName={calendarRangeStartClassName}
-                  calendarRangeBetweenClassName={calendarRangeBetweenClassName}
-                  calendarRangeEndClassName={calendarRangeEndClassName}
-                  disabledDays={disabledDays}
-                  colorPrimary={colorPrimary}
-                  colorPrimaryLight={colorPrimaryLight}
-                  slideAnimationDuration={slideAnimationDuration}
-                  onDisabledDayError={onDisabledDayError}
-                  minimumDate={minimumDate}
-                  maximumDate={maximumDate}
-                  selectorStartingYear={selectorStartingYear}
-                  selectorEndingYear={selectorEndingYear}
-                  locale={locale}
-                  shouldHighlightWeekends={shouldHighlightWeekends}
-                  renderFooter={renderFooter}
-                  customDaysClassName={customDaysClassName}
-                  picker={picker}
-                />
-              </div>
-              <div className="DatePicker__calendarArrow" />
-            </>
-          )}
-        </div>
+        {isPortal ? ReactDOM.createPortal((
+          <div className={`DatePicker ${wrapperClassName}`}>
+            {calendarItem}
+          </div>
+        ), document.body) : calendarItem}
       </div>
     );
   },
@@ -222,6 +263,7 @@ DatePicker.defaultProps = {
   wrapperClassName: '',
   locale: 'en',
   calendarPopperPosition: 'auto',
+  isPortal: false,
 };
 
 export default DatePicker;
